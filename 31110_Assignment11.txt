@@ -1,0 +1,78 @@
+> use ass11
+switched to db ass11
+
+> db.createCollection("order")
+{ "ok" : 1 }
+
+> db.order.insert({"_id":1,"custId":101,"price":75})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":2,"custId":101,"price":45})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":3,"custId":102,"price":99})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":4,"custId":101,"price":29})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":5,"custId":103,"price":59})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":6,"custId":102,"price":52})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":7,"custId":101,"price":95})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":8,"custId":103,"price":22})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":9,"custId":104,"price":218})
+WriteResult({ "nInserted" : 1 })
+> db.order.insert({"_id":10,"custId":103,"price":33})
+WriteResult({ "nInserted" : 1 })
+
+> db.order.find().pretty()
+{ "_id" : 1, "custId" : 101, "price" : 75 }
+{ "_id" : 2, "custId" : 101, "price" : 45 }
+{ "_id" : 3, "custId" : 102, "price" : 99 }
+{ "_id" : 4, "custId" : 101, "price" : 29 }
+{ "_id" : 5, "custId" : 103, "price" : 59 }
+{ "_id" : 6, "custId" : 102, "price" : 52 }
+{ "_id" : 7, "custId" : 101, "price" : 95 }
+{ "_id" : 8, "custId" : 103, "price" : 22 }
+{ "_id" : 9, "custId" : 104, "price" : 218 }
+{ "_id" : 10, "custId" : 103, "price" : 33 }
+
+> var mapFun=function(){emit(this.custId,this.price);};
+> var redFun=function(key,values){return Array.sum(values);};
+> db.order.mapReduce(mapFun,redFun,{out:"order_result"});
+{
+	"result" : "order_result",
+	"timeMillis" : 355,
+	"counts" : {
+		"input" : 10,
+		"emit" : 10,
+		"reduce" : 3,
+		"output" : 4
+	},
+	"ok" : 1
+}
+
+> db.order_result.find().pretty()
+{ "_id" : 101, "value" : 244 }
+{ "_id" : 102, "value" : 151 }
+{ "_id" : 103, "value" : 114 }
+{ "_id" : 104, "value" : 218 }
+
+> var redFun=function(key,values){return Array.avg(values);};
+> db.order.mapReduce(mapFun,redFun,{query:{custId:{$gt:101}},out:"order__result"});
+{
+	"result" : "order__result",
+	"timeMillis" : 411,
+	"counts" : {
+		"input" : 6,
+		"emit" : 6,
+		"reduce" : 2,
+		"output" : 3
+	},
+	"ok" : 1
+}
+
+> db.order__result.find().pretty()
+{ "_id" : 102, "value" : 75.5 }
+{ "_id" : 103, "value" : 38 }
+{ "_id" : 104, "value" : 218 }
